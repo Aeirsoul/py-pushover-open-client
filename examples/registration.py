@@ -2,8 +2,8 @@
 In this example we register a new device to the account provided
 in the configuration file.
 
-Please note that if you do not own a Pushover Desktop License for this 
-account, after 5 days of registering a new device you will need to 
+Please note that if you do not own a Pushover Desktop License for this
+account, after 5 days of registering a new device you will need to
 purchase one. After purchasing you have unlimited access to new desktop
 devices. Visit .... for more information.
 """

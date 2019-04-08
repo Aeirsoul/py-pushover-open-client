@@ -15,7 +15,7 @@ class Message:
     """Just an easy way to wrap the message objects
     so we dont have to expose a lot of underlying json work
     in both websocket and outstanding messages"""
-    
+
     def __init__(self, messageJson):
         """Sets all the parts of the message so that can be used easily"""
         """Always exist"""
@@ -52,7 +52,7 @@ class Message:
 
 class Request:
     """This is the class that allows requesting to the Pushover servers"""
-    
+
     def __init__(self, requestType, url, jsonPayload):
         """Eg. 'post', 'LOGIN_URL', {'name': value}"""
         r = None
@@ -62,7 +62,7 @@ class Request:
                 r = requests.post(url, jsonPayload)
             elif (requestType == 'get'):
                 r = requests.get(url, params=jsonPayload)
-                
+
             if(r != None):
                 self.response = r.json()
                 if 400 <= r.status_code < 500 or self.response["status"] == 0:
@@ -72,7 +72,7 @@ class Request:
             #Some exception has been raised, set status as 0 before returning
             print (e)
             self.response["status"] = 0
-    
+
     def __str__(self):
         return str(self.response)
 
@@ -81,12 +81,12 @@ class WSClient:
     Helps abstract away alot of the data from the client
     This uses websocket-client to maintain a connection.
     Further information can be found at https://pushover.net/api/client"""
-    
+
     """TODO: Use the keep-alive packet to determine that the connection
     is still being kept alive and well"""
     """TODO: Ensure we can keyboard interrupt websocket
     to stop execution"""
-    
+
     def __init__(self, inClient):
         self.connected = False
         self.ws = None
@@ -96,7 +96,7 @@ class WSClient:
         self.callback = None
         self.trace = False
         self.unseenMessages = []
-        
+
     """External functions for use by the client"""
     def isConnected(self):
         """Checks if we're connected to the websocket"""
@@ -104,7 +104,7 @@ class WSClient:
         isCon = self.connected
         #self.mainMutex.release()
         return isCon
-        
+
     def getMessages(self):
         """Allows messages to be retrieved by the user. Messages
         are passed here when no callback method is supplied to the
@@ -114,7 +114,7 @@ class WSClient:
         self.unseenMessages = []
         #self.mainMutex.release()
         return returnMessages
-        
+
     def disconnect(self):
         """Disconnects the client from the websocket"""
         if(isConnected()):
@@ -122,7 +122,7 @@ class WSClient:
             self.mainThread.join()
         else:
             print ("Attemping to disconnect but not connected.")
-    
+
     def connect(self, callback, traceRoute):
         """Connects the client to the websocket"""
         if(not self.isConnected()):
@@ -143,7 +143,7 @@ class WSClient:
             self.mainThread.start()
         else:
             print ("Attempting to connect but already connected.")
-        
+
     """Internal functions/callbacks"""
     def respawnConnection(self):
         """Respawns connection to websocket after drop request by Pushover"""
@@ -151,17 +151,17 @@ class WSClient:
         self.mainThread.join()
         #Spawn new websocket
         self.connect(self.callback, self.trace)
-    
+
     def onOpen(self):
         """After connecting, 'logs into' the websocket"""
         print ("Websocket connection opened.")
         self.connected = True
         self.ws.send("login:"+self.client.deviceID+":"+self.client.secret+"\n")
-    
+
     def onRecieve(self, message):
         """Handles pushover's frames which tell us if messages have
         arrived, or whether to reconnect"""
-        
+
         str = message.decode('utf-8')
         if(str == '#'):
             #Keep alive packet, nothing to be done
@@ -194,15 +194,15 @@ class WSClient:
             self.ws.close()
             print ("Exception, an error has occurred with websocket! Please "
                     "check the details you have provided in configuration.")
-        
+
     def onError(self, error):
         """When websocket recieves an error it ends up here"""
         print (error)
-        
+
     def onClose(self):
         """After closing websocket"""
         print ("Websocket connection closed.")
-        self.connected = False  
+        self.connected = False
 
 class Client:
     """This is the class that represents this specific user and device that
@@ -334,12 +334,12 @@ class Client:
                         error_message += " ({})".format(request.response['errors'])
 
                     raise Exception(error_message)
-                
+
     def getWebSocketMessages(self, messageCallback = None, traceRoute = False):
         """Connects to PushOver's websocket to receive real-time notifications.
         Can be used in two ways:
             - Can be polled periodically by a calling function
-            - Can be passed in a callback function which will execute every 
+            - Can be passed in a callback function which will execute every
               time a message is received (recommended)
         """
         if(messageCallback == None):
@@ -350,15 +350,15 @@ class Client:
             return self.websocket.getMessages()
         else:
             #Assume this function is a one off call
-            #Give the callback to websocket to do its thing. 
+            #Give the callback to websocket to do its thing.
             #This bypasses getting the messages separately. Thats it
             if(not self.websocket.isConnected()):
                 self.websocket.connect(messageCallback, traceRoute)
-        
+
     def acknowledgeEmergency(self, receiptID):
         if not self.secret:
             raise PermissionError("secret is needed for acknowledging messages!")
-        """Uses the receiptID which is supplied by the user to acknowledge emergency 
+        """Uses the receiptID which is supplied by the user to acknowledge emergency
         priority messages"""
 
         ackStrURL = RECEIPT_URL.replace("0000", receiptID)
