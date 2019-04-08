@@ -26,11 +26,11 @@ To do this, you must setup a configuration file in JSON format containing your P
 
 ```
 {
-	"email": "myPushoverEmail@example.com",
-	"password": "myPushoverPassword",
-	"secret": "",
-	"deviceID": "",
-	"userID": ""
+    "email": "myPushoverEmail@example.com",
+    "password": "myPushoverPassword",
+    "secret": "",
+    "deviceID": "",
+    "userID": ""
 }
 ```
 
@@ -63,10 +63,10 @@ messageList = client.getOustandingMessages()
 
 #Process/do work with messageList
 if(messageList):
-	for m in messageList:
-		print m.message
+    for m in messageList:
+        print m.message
 
-	client.deleteMessages(messageList[-1].id)
+    client.deleteMessages(messageList[-1].id)
 ```
 
 After you have flushed out any previous messages, you can connect to the websocket to receive real time messages! This can be done in one of two methods - via **polling**, or via passing in a **callback function** (recommended). Here are examples of both:
@@ -74,41 +74,41 @@ After you have flushed out any previous messages, you can connect to the websock
 ##### **Polling:**
 ```python
 while(True):
-	messageList = client.getWebSocketMessages()
+    messageList = client.getWebSocketMessages()
 
-	#Prcoess/do work with messageList!
-	if(messageList):
-		for message in messageList:
-		
-			#Do work with message here!
+    #Prcoess/do work with messageList!
+    if(messageList):
+        for message in messageList:
+        
+            #Do work with message here!
 
-			#Make sure to acknowledge messages with priority >= 2
-			if(message.priority >= 2):
-				client.acknowledgeEmergency(message.receipt)			
-			
-		#Make sure you delete messages that you recieve!
-		client.deleteMessages(messageList[-1].id)
-	
-	sleep(5) #Wait a few seconds between requests
+            #Make sure to acknowledge messages with priority >= 2
+            if(message.priority >= 2):
+                client.acknowledgeEmergency(message.receipt)            
+            
+        #Make sure you delete messages that you recieve!
+        client.deleteMessages(messageList[-1].id)
+    
+    sleep(5) #Wait a few seconds between requests
 ```
 
 ##### **Callback:**
 ```python
 def messageCallback(messageList):
-	#Prcoess/do work with messageList!
-	if(messageList):
-		for message in messageList:
-		
-			#Do work with message here!
-		
-			#Make sure to acknowledge messages with priority >= 2
-			if(message.priority >= 2):
-				client.acknowledgeEmergency(message.receipt)			
-			
-		#Make sure you delete messages that you recieve!
-		client.deleteMessages(messageList[-1].id)
+    #Prcoess/do work with messageList!
+    if(messageList):
+        for message in messageList:
+        
+            #Do work with message here!
+        
+            #Make sure to acknowledge messages with priority >= 2
+            if(message.priority >= 2):
+                client.acknowledgeEmergency(message.receipt)            
+            
+        #Make sure you delete messages that you recieve!
+        client.deleteMessages(messageList[-1].id)
 
-client.getWebSocketMessages(messageCallback)	
+client.getWebSocketMessages(messageCallback)    
 ```
 
 **_And that's it!_** Please remember to be responsible when accessing Pushover's API!
