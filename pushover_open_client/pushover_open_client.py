@@ -207,8 +207,8 @@ class WSClient:
 class Client:
     """This is the class that represents this specific user and device that
     we are logging in from. All messages we receive are sent to this Client."""
-    
-    def __init__(self, configFile=None, email=None, password=None):
+
+    def __init__(self, configFile=None, email=None, password=None, twofa=None):
         """Attempts to load and parse the configuration file"""
         """TODO: Error handling and proper exceptions """
         """TODO: Add possible global timeouts for certain functions to prevent
@@ -220,15 +220,20 @@ class Client:
 
             self.email = jsonConfig["email"]
             self.password = jsonConfig["password"]
+
+            if "twofa" in jsonConfig:
+                self.twofa = jsonConfig["twofa"]
+
             self.secret = jsonConfig["secret"]
             self.deviceID = jsonConfig["deviceID"]
             self.userID = jsonConfig["userID"]
         else:
             self.email = email
             self.password = password
+            self.twofa = twofa
 
         self.websocket = WSClient(self)
-        
+
     def writeConfig(self, configFile):
         """Writes out a config file containing the updated params so that
         in the future you don't need to register the device/get secret/user key"""
@@ -240,10 +245,19 @@ class Client:
                 'deviceID': self.deviceID,
                 'userID': self.userID
                 }, outfile, indent=4)
-        
-    def login(self):
+
+    def login(self, force=False):
         """Logs in to an account using supplied information in configuration"""
-        payload = {"email": self.email, "password": self.password}
+        payload = {}
+
+        if self.secret != None and self.secret != "" and force == False:
+            return
+
+        if self.twofa == None:
+            payload = {"email": self.email, "password": self.password}
+        else:
+            payload = {"email": self.email, "password": self.password, "twofa": self.twofa}
+
         request = Request('post', LOGIN_URL, payload)
         if(request.response["status"] != 0):
             self.secret = request.response["secret"]
@@ -253,12 +267,15 @@ class Client:
             if ('errors' in request.response and len(request.response['errors']) > 0):
                 error_message += " ({})".format(request.response['errors'])
             raise PermissionError(error_message)
-            
-    def registerDevice(self, deviceName):
+
+    def registerDevice(self, deviceName, force=False):
         """Registers the client as active using supplied information in either
         configuration or after login"""
         if (self.secret is None):
             raise PermissionError("Secret must be set before registering a device")
+
+        if self.deviceID != None and self.deviceID != "" and force == False:
+            return
 
         payload = {"secret": self.secret, "os": "O", "name": deviceName}
         request = Request('post', DEVICE_URL, payload)
