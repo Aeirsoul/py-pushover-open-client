@@ -214,23 +214,34 @@ class Client:
         """TODO: Add possible global timeouts for certain functions to prevent
         spamming of gets/posts"""
 
+        self.email = email
+        self.password = password
+        self.twofa = twofa
+        self.secret = None
+        self.deviceID = None
+        self.userID = None
+
         if configFile is not None:
             with open(configFile, 'r') as infile:
                 jsonConfig = json.load(infile)
 
-            self.email = jsonConfig["email"]
-            self.password = jsonConfig["password"]
+            if "email" in jsonConfig:
+                self.email = jsonConfig["email"]
+
+            if "password" in jsonConfig:
+                self.password = jsonConfig["password"]
 
             if "twofa" in jsonConfig:
                 self.twofa = jsonConfig["twofa"]
 
-            self.secret = jsonConfig["secret"]
-            self.deviceID = jsonConfig["deviceID"]
-            self.userID = jsonConfig["userID"]
-        else:
-            self.email = email
-            self.password = password
-            self.twofa = twofa
+            if "secret" in jsonConfig:
+                self.secret = jsonConfig["secret"]
+
+            if "deviceID" in jsonConfig:
+                self.deviceID = jsonConfig["deviceID"]
+
+            if "userID" in jsonConfig:
+                self.userID = jsonConfig["userID"]
 
         self.websocket = WSClient(self)
 
