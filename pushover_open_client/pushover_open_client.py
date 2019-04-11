@@ -257,9 +257,12 @@ class Client:
                 'userID': self.userID
                 }, outfile, indent=4)
 
-    def login(self, force=False):
+    def login(self, twofa=None, force=False):
         """Logs in to an account using supplied information in configuration"""
         payload = {}
+
+        if twofa != None:
+            self.twofa = twofa
 
         if self.secret != None and self.secret != "" and force == False:
             return
